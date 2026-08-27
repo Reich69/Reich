@@ -152,7 +152,10 @@ label{
       <option value="Men">Men</option>
       <option value="Women">Women</option>
     </select>
-
+<label>Subcategory</label>
+<select id="subcategory">
+  <option value="">Select Subcategory</option>
+</select>
     <label>Price</label>
     <input id="price" type="number" placeholder="799">
 
@@ -193,7 +196,24 @@ label{
 </div>
 
 <script>
+const subcategories = {
+  Clothing: ["T-Shirt", "Shirt", "Pants", "Hoodie", "Jacket"],
+  Electronics: ["Earbuds", "Smart Watch", "Power Bank", "Charger", "Headphones"],
+  Shoes: ["Sneakers", "Sandals", "Formal Shoes", "Sports Shoes"],
+  Men: ["T-Shirt", "Shirt", "Pants", "Panjabi"],
+  Women: ["Top", "Saree", "Dress", "Pants", "Hijab"]
+};
 
+document.getElementById("category").addEventListener("change", function(){
+  const category = this.value;
+  const subcategory = document.getElementById("subcategory");
+
+  subcategory.innerHTML = '<option value="">Select Subcategory</option>';
+
+  (subcategories[category] || []).forEach(item => {
+    subcategory.innerHTML += `<option value="${item}">${item}</option>`;
+  });
+});
 async function loadProducts(){
 
   const { data, error } = await supabaseClient
@@ -269,7 +289,7 @@ async function addProduct(){
     name: document.getElementById("name").value.trim(),
 
     category: document.getElementById("category").value,
-
+subcategory: document.getElementById("subcategory").value || null,
     price: Number(document.getElementById("price").value),
 
     sale_price:
