@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reich | Admin Panel</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f8fafc;
+  color:#111827;
+}
+header{
+  background:#111827;
+  color:white;
+  padding:18px 20px;
+}
+.header{
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logo{
+  font-size:24px;
+  font-weight:800;
+}
+.container{
+  max-width:1100px;
+  margin:30px auto;
+  padding:0 20px;
+}
+.card{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:22px;
+  margin-bottom:25px;
+}
+h2{
+  margin-top:0;
+}
+input,textarea,select{
+  width:100%;
+  padding:11px;
+  margin:6px 0 14px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+}
+label{
+  font-size:13px;
+  font-weight:700;
+}
+.btn{
+  background:#e11d48;
+  color:white;
+  border:0;
+  padding:11px 17px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+}
+.btn.secondary{
+  background:#111827;
+}
+.btn.delete{
+  background:#dc2626;
+}
+.products{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
+.product{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  overflow:hidden;
+}
+.product img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  background:#e5e7eb;
+}
+.body{
+  padding:14px;
+}
+.price{
+  font-weight:800;
+  font-size:18px;
+  margin:8px 0;
+}
+.actions{
+  display:flex;
+  gap:8px;
+}
+.actions button{
+  flex:1;
+}
+.status{
+  padding:10px;
+  background:#f1f5f9;
+  border-radius:8px;
+  margin-bottom:15px;
+}
+@media(max-width:800px){
+  .products{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:500px){
+  .products{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+</head>
+
+<body>
+
+<header>
+  <div class="header">
+    <div class="logo">Reich Admin</div>
+    <a href="index.html" style="color:white">View Store</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Add Product</h2>
+
+    <div id="status" class="status">
+      Ready
+    </div>
+
+    <label>Product Name</label>
+    <input id="name" placeholder="Example: Premium T-Shirt">
+
+    <label>Category</label>
+    <select id="category">
+      <option value="Clothing">Clothing</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Men">Men</option>
+      <option value="Women">Women</option>
+    </select>
+
+    <label>Price</label>
+    <input id="price" type="number" placeholder="799">
+
+    <label>Sale Price</label>
+    <input id="sale_price" type="number" placeholder="599">
+
+    <label>Sizes</label>
+    <input id="sizes_text" placeholder="M,L,XL">
+
+    <label>Colors</label>
+    <input id="colors_text" placeholder="Black,White">
+
+    <label>Stock</label>
+    <input id="stock" type="number" placeholder="20">
+
+    <label>Description</label>
+    <textarea id="description" placeholder="Product description"></textarea>
+
+    <label>Image URL</label>
+    <input id="image_url" placeholder="https://...">
+
+    <label>
+      <input id="published" type="checkbox" checked style="width:auto">
+      Published
+    </label>
+
+    <button class="btn" onclick="addProduct()">
+      Add Product
+    </button>
+  </div>
+
+
+  <div class="card">
+    <h2>Products</h2>
+    <div id="products" class="products"></div>
+  </div>
+
+</div>
+
+<script>
+
+async function loadProducts(){
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  if(error){
+    document.getElementById("status").textContent =
+      "Error: " + error.message;
+    return;
+  }
+
+  const box = document.getElementById("products");
+
+  box.innerHTML = (data || []).map(p => `
+
+    <div class="product">
+
+      <img
+        src="${p.image_url || 'https://via.placeholder.com/800x500?text=No+Image'}"
+        alt="${p.name}"
+      >
+
+      <div class="body">
+
+        <h3>${p.name}</h3>
+
+        <div>${p.category}</div>
+
+        <div class="price">
+          ৳${p.sale_price || p.price}
+        </div>
+
+        ${
+          p.sale_price
+          ? `<small><s>৳${p.price}</s></small>`
+          : ""
+        }
+
+        <div style="margin-top:8px">
+          Stock: ${p.stock ?? 0}
+        </div>
+
+        <div style="margin-top:8px">
+          ${p.published ? "✅ Published" : "❌ Hidden"}
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+
+          <button
+            class="btn delete"
+            onclick="deleteProduct('${p.id}')"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+async function addProduct(){
+
+  const product = {
+
+    name: document.getElementById("name").value.trim(),
+
+    category: document.getElementById("category").value,
+
+    price: Number(document.getElementById("price").value),
+
+    sale_price:
+      document.getElementById("sale_price").value
+      ? Number(document.getElementById("sale_price").value)
+      : null,
+
+    sizes_text:
+      document.getElementById("sizes_text").value.trim() || null,
+
+    colors_text:
+      document.getElementById("colors_text").value.trim() || null,
+
+    stock:
+      document.getElementById("stock").value
+      ? Number(document.getElementById("stock").value)
+      : 0,
+
+    description:
+      document.getElementById("description").value.trim() || null,
+
+    image_url:
+      document.getElementById("image_url").value.trim() || null,
+
+    published:
+      document.getElementById("published").checked
+  };
+
+
+  if(!product.name || !product.price){
+
+    alert("Product name এবং price দিতে হবে।");
+    return;
+
+  }
+
+
+  document.getElementById("status").textContent =
+    "Adding product...";
+
+
+  const { error } = await supabaseClient
+    .from("products")
+    .insert([product]);
+
+
+  if(error){
+
+    console.error(error);
+
+    document.getElementById("status").textContent =
+      "Error: " + error.message;
+
+    return;
+
+  }
+
+
+  document.getElementById("status").textContent =
+    "✅ Product added successfully!";
+
+
+  document.getElementById("name").value="";
+  document.getElementById("price").value="";
+  document.getElementById("sale_price").value="";
+  document.getElementById("sizes_text").value="";
+  document.getElementById("colors_text").value="";
+  document.getElementById("stock").value="";
+  document.getElementById("description").value="";
+  document.getElementById("image_url").value="";
+
+  loadProducts();
+
+}
+
+
+async function deleteProduct(id){
+
+  if(!confirm("এই product delete করতে চাও?")){
+    return;
+  }
+
+
+  const { error } = await supabaseClient
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+
+  if(error){
+
+    alert("Delete করতে সমস্যা হয়েছে: " + error.message);
+    return;
+
+  }
+
+
+  loadProducts();
+
+}
+
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
