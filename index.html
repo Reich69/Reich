@@ -123,7 +123,14 @@ function render(){
     </div>
   `).join("");
 }
-function openOrder(id){document.getElementById("product").value=products.find(p=>p.id===id).name;document.getElementById("modal").style.display="flex"}
+function openOrder(id){
+  const product = products.find(p => p.id === id);
+
+  if(!product) return;
+
+  document.getElementById("product").value = product.name;
+  document.getElementById("modal").style.display = "flex";
+}
 function closeOrder(){document.getElementById("modal").style.display="none"}
 function order(e){e.preventDefault();if(!STORE.phone){alert("Contact/WhatsApp number has not been added yet.");return}let msg=`Order from ${STORE.name}%0AProduct: ${document.getElementById("product").value}%0AName: ${document.getElementById("name").value}%0APhone: ${document.getElementById("customerPhone").value}%0AAddress: ${document.getElementById("address").value}%0ASize/Color: ${document.getElementById("variant").value}%0AQuantity: ${document.getElementById("qty").value}`;window.open("https://wa.me/"+STORE.phone+"?text="+msg,"_blank")}
 function openCart(){alert("Cart can be expanded in the next version.")}
