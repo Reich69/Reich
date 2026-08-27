@@ -205,14 +205,18 @@ const subcategories = {
 };
 
 document.getElementById("category").addEventListener("change", function(){
+
   const category = this.value;
   const subcategory = document.getElementById("subcategory");
 
-  subcategory.innerHTML = '<option value="">Select Subcategory</option>';
+  subcategory.innerHTML =
+    '<option value="">Select Subcategory</option>';
 
   (subcategories[category] || []).forEach(item => {
-    subcategory.innerHTML += `<option value="${item}">${item}</option>`;
+    subcategory.innerHTML +=
+      `<option value="${item}">${item}</option>`;
   });
+
 });
 async function loadProducts(){
 
