@@ -91,8 +91,38 @@ async function loadProducts(){
   render();
 }
 let active="All";
-function filterCat(c){active=c;render()}
-function render(){let q=(document.getElementById("search").value||"").toLowerCase();let list=products.filter(p=>(active==="All"||p.cat===active)&&(p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));document.getElementById("productsGrid").innerHTML=list.map(p=>`<div class="product"><img src="${p.img}" alt="${p.name}"><div class="body"><h3>${p.name}</h3><div class="price">${STORE.currency}${p.price}<span class="old">${STORE.currency}${p.old}</span></div><button class="btn" onclick="openOrder(${p.id})">Buy Now</button></div></div>`).join("")}
+function filterCat(c){
+  active=c;
+  render();
+}
+
+function render(){
+  let q=(document.getElementById("search").value||"").toLowerCase();
+
+  let list=products.filter(p =>
+    (active==="All" || p.category===active) &&
+    (
+      p.name.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+    )
+  );
+
+  document.getElementById("productsGrid").innerHTML=list.map(p=>`
+    <div class="product">
+      <img src="${p.image_url || 'https://via.placeholder.com/800x500?text=No+Image'}" alt="${p.name}">
+      <div class="body">
+        <h3>${p.name}</h3>
+
+        <div class="price">
+          ${STORE.currency}${p.sale_price || p.price}
+          ${p.sale_price ? `<span class="old">${STORE.currency}${p.price}</span>` : ""}
+        </div>
+
+        <button class="btn" onclick="openOrder('${p.id}')">Buy Now</button>
+      </div>
+    </div>
+  `).join("");
+}
 function openOrder(id){document.getElementById("product").value=products.find(p=>p.id===id).name;document.getElementById("modal").style.display="flex"}
 function closeOrder(){document.getElementById("modal").style.display="none"}
 function order(e){e.preventDefault();if(!STORE.phone){alert("Contact/WhatsApp number has not been added yet.");return}let msg=`Order from ${STORE.name}%0AProduct: ${document.getElementById("product").value}%0AName: ${document.getElementById("name").value}%0APhone: ${document.getElementById("customerPhone").value}%0AAddress: ${document.getElementById("address").value}%0ASize/Color: ${document.getElementById("variant").value}%0AQuantity: ${document.getElementById("qty").value}`;window.open("https://wa.me/"+STORE.phone+"?text="+msg,"_blank")}
