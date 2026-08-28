@@ -39,14 +39,51 @@ input,textarea{width:100%;padding:11px;margin:7px 0 12px;border:1px solid #d1d5d
 </div></section>
 
 <section class="container" id="categories">
-<div class="title"><h2>Shop by Category</h2></div>
+
+<div class="title">
+  <h2>Shop by Category</h2>
+</div>
+
 <div class="grid">
-<a class="cat" href="#products" onclick="filterCat('Clothing')"><div>👕</div>Clothing</a>
-<a class="cat" href="#products" onclick="filterCat('Electronics')"><div>📱</div>Electronics</a>
-<a class="cat" href="#products" onclick="filterCat('Shoes')"><div>👟</div>Shoes</a>
-<a class="cat" href="#products" onclick="filterCat('Men')"><div>👨</div>Men</a>
-<a class="cat" href="#products" onclick="filterCat('Women')"><div>👩</div>Women</a>
-</div></section>
+
+<a class="cat" href="#products" onclick="filterCat('Clothing')">
+  <div>👕</div>
+  Clothing
+</a>
+
+<a class="cat" href="#products" onclick="filterCat('Electronics')">
+  <div>📱</div>
+  Electronics
+</a>
+
+<a class="cat" href="#products" onclick="filterCat('Shoes')">
+  <div>👟</div>
+  Shoes
+</a>
+
+<a class="cat" href="#products" onclick="filterCat('Men')">
+  <div>👨</div>
+  Men
+</a>
+
+<a class="cat" href="#products" onclick="filterCat('Women')">
+  <div>👩</div>
+  Women
+</a>
+
+</div>
+
+<div id="subcategories" style="margin-top:25px;display:none">
+
+  <h3 id="subcategoryTitle"></h3>
+
+  <div id="subcategoryButtons"
+       style="display:flex;gap:10px;flex-wrap:wrap">
+  </div>
+
+</div>
+
+</section>
 
 <section class="container" id="products">
 <div class="title"><h2>Featured Products</h2><input class="search" id="search" placeholder="Search products..." oninput="render()"></div>
@@ -91,22 +128,87 @@ async function loadProducts(){
   render();
 }
 let active="All";
-function filterCat(c){
-  active=c;
+  let activeSubcategory="All";
+
+const subcategories = {
+  Clothing: ["T-Shirt", "Shirt", "Pants", "Hoodie", "Jacket"],
+  Electronics: ["Earbuds", "Smart Watch", "Power Bank", "Charger", "Headphones"],
+  Shoes: ["Sneakers", "Sandals", "Formal Shoes", "Sports Shoes"],
+  Men: ["T-Shirt", "Shirt", "Pants", "Panjabi"],
+  Women: ["Top", "Saree", "Dress", "Pants", "Hijab"]
+};
+
+function showSubcategories(category){
+
+  const box = document.getElementById("subcategories");
+  const title = document.getElementById("subcategoryTitle");
+  const buttons = document.getElementById("subcategoryButtons");
+
+  const list = subcategories[category] || [];
+
+  if(!list.length){
+    box.style.display="none";
+    return;
+  }
+
+  box.style.display="block";
+
+  title.textContent = category + " Categories";
+
+  buttons.innerHTML = `
+    <button class="btn" onclick="filterSubcategory('All')">
+      All
+    </button>
+  `;
+
+  list.forEach(item => {
+
+    buttons.innerHTML += `
+      <button
+        class="btn"
+        onclick="filterSubcategory('${item}')">
+        ${item}
+      </button>
+    `;
+
+  });
+
+}
+
+function filterSubcategory(subcategory){
+
+  activeSubcategory = subcategory;
+
   render();
+
+  document.getElementById("products").scrollIntoView({
+    behavior:"smooth"
+  });
+
+}
+function filterCat(c){
+
+  active = c;
+  activeSubcategory = "All";
+
+  showSubcategories(c);
+
+  render();
+
 }
 
 function render(){
   let q=(document.getElementById("search").value||"").toLowerCase();
 
-  let list=products.filter(p =>
-    (active==="All" || p.category===active) &&
-    (
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
-    )
-  );
-
+let list = products.filter(p =>
+  (active === "All" || p.category === active) &&
+  (activeSubcategory === "All" || p.subcategory === activeSubcategory) &&
+  (
+    p.name.toLowerCase().includes(q) ||
+    p.category.toLowerCase().includes(q) ||
+    (p.subcategory || "").toLowerCase().includes(q)
+  )
+);
   document.getElementById("productsGrid").innerHTML=list.map(p=>`
     <div class="product">
       <img src="${p.image_url || 'https://via.placeholder.com/800x500?text=No+Image'}" alt="${p.name}">
